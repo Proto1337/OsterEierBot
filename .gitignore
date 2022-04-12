@@ -143,3 +143,5 @@ bin/python
 bin/python3
 bin/wheel
 lib64
+CONFIG/SERVER.py
+SECRET/TOKEN.py
