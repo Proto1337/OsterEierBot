@@ -2,10 +2,11 @@ import discord
 import os
 import asyncio
 import json
+import random
 from discord.ext import commands
 from discord.ui import InputText, Modal
 from SECRET import TOKEN
-from CONFIG import SERVER
+from CONFIG import SERVER, EGGS
 
 if os.name != "nt":
     import uvloop
@@ -23,6 +24,8 @@ bot = Bot()
 guild = SERVER.GUILD
 # load admin role from SERVER.py in CONFIG/
 admin = SERVER.ADMINROLE
+# load number of eggs from EGGS.py in CONFIG/
+eggs = EGGS.EGGS
 
 class EierSuche(Modal):
     def __init__(self, *args, **kwargs) -> None:
@@ -70,7 +73,7 @@ class EierSuche(Modal):
 
 # Start egghunt [eiersuche]
 @discord.commands.permissions.has_role(admin, guild_id=guild)
-@bot.slash_command(name="eiersuche", guild_ids=[guild])
+@bot.slash_command(name="eiersuche", guild_ids=[guild], description="Starte die Eier-Suche.")
 async def eiersuche(ctx):
     class EierView(discord.ui.View):
         def __init__(self):
@@ -86,6 +89,33 @@ async def eiersuche(ctx):
     view = EierView()
     # "How many eggs did you find?"
     await ctx.send("Wie viele **Eier** hast du gefunden?", view=view)
+
+# Get a winner
+@discord.commands.permissions.has_role(admin, guild_id=guild, description="Beende die Suche, ermittle einen random Gewinner.")
+@bot.slash_command(name="eiergefunden", guild_ids=[guild])
+async def eiersuche(ctx):
+    # load local JSON database :: all participants
+    with open("guesses.json", 'r') as f:
+        data = json.load(f)
+    
+    # helping variables
+    l = []
+    i = 0
+
+    # while loop to go through json
+    while(True):
+        try:
+            if(data["participant"+str(i)]["guess"] == n):
+                l.append(data["participant"+str(i)]["id"])
+            i = i+1
+        # exception -> end of json
+        except:
+            # get winner
+            winner = random.randint(0, len(l)-1)
+            winningmember = ctx.guild.get_member(l[winner])
+
+            await ctx.respond("Gewinenr gefunden", ephemeral=True)
+            await ctx.channel.send(f"Gewonnen hat {winningmember.mention}")
 
 
 # Load token from TOKEN.py in folder SECRET/
