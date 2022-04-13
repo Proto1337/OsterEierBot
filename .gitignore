@@ -146,3 +146,4 @@ lib64
 CONFIG/SERVER.py
 SECRET/TOKEN.py
 SECRET/
+test.py

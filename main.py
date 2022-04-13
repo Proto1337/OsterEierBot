@@ -15,14 +15,16 @@ if os.name != "nt":
 
 class Bot(commands.Bot):
     def __init__(self):
-        super().__init__(command_prefix=">")
+        super().__init__(command_prefix="^.^")
 
 
 bot = Bot()
 # load guild id from SERVER.py in CONFIG/
 guild = SERVER.GUILD
+# load admin role from SERVER.py in CONFIG/
+admin = SERVER.ADMINROLE
 
-class MyModal(Modal):
+class EierSuche(Modal):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         # "How many eggs did you find?"
@@ -66,10 +68,11 @@ class MyModal(Modal):
         embed.add_field(name="Anzahl Eier", value=self.children[0].value, inline=False)
         await interaction.response.send_message(embeds=[embed], ephemeral=True)
 
-
-@bot.slash_command(name="modaltest", guild_ids=[guild])
-async def modal_slash(ctx):
-    class MyView(discord.ui.View):
+# Start egghunt [eiersuche]
+@discord.commands.permissions.has_role(admin, guild_id=guild)
+@bot.slash_command(name="eiersuche", guild_ids=[guild])
+async def eiersuche(ctx):
+    class EierView(discord.ui.View):
         def __init__(self):
             super().__init__(timeout=None)
 
@@ -77,10 +80,10 @@ async def modal_slash(ctx):
         @discord.ui.button(label="Gib deine Schätzung ab", style=discord.ButtonStyle.primary, emoji="🐇")
         async def button_callback(self, button, interaction):
             # "🐰 Easter-Campaign 🐰"
-            modal = MyModal(title="🐰 Ostern-Aktion 🐰")
+            modal = EierSuche(title="🐰 Ostern-Aktion 🐰")
             await interaction.response.send_modal(modal)
 
-    view = MyView()
+    view = EierView()
     # "How many eggs did you find?"
     await ctx.send("Wie viele **Eier** hast du gefunden?", view=view)
 
