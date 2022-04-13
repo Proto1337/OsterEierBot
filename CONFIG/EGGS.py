@@ -1,0 +1,1 @@
+EGGS=0 # How many eggs are hidden?
