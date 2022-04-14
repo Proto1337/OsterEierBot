@@ -27,11 +27,17 @@ admin = SERVER.ADMINROLE
 # load number of eggs from EGGS.py in CONFIG/
 eggs = EGGS.EGGS
 
+
+@bot.listen()
+async def on_ready():
+    print(f"Bot ist online als {bot.user}.")
+
+
 class EierSuche(Modal):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         # "How many eggs did you find?"
-        self.add_item(InputText(label="Wie viele Eier hast du gefunden?", placeholder="1"))
+        self.add_item(InputText(label="Wie viele Eier hast du gefunden?", placeholder="Ganze Zahl. Nur eine Teilnahme möglich!", min_length=1, max_length=2))
 
     async def callback(self, interaction: discord.Interaction):
         # Check if Input is an Integer, end task if not
@@ -69,11 +75,13 @@ class EierSuche(Modal):
         embed = discord.Embed(title="Deine Eingabe", color=discord.Color.random())
         # "No. of eggs"
         embed.add_field(name="Anzahl Eier", value=self.children[0].value, inline=False)
-        await interaction.response.send_message(embeds=[embed], ephemeral=True)
+        # participated successfully
+        await interaction.response.send_message(content="Du bist nun eingetragen! 🐰", embeds=[embed], ephemeral=True)
+
 
 # Start egghunt [eiersuche]
-@discord.commands.permissions.has_role(admin, guild_id=guild)
 @bot.slash_command(name="eiersuche", guild_ids=[guild], description="Starte die Eier-Suche.")
+@discord.commands.permissions.has_role(admin, guild_id=guild)
 async def eiersuche(ctx):
     class EierView(discord.ui.View):
         def __init__(self):
@@ -87,12 +95,14 @@ async def eiersuche(ctx):
             await interaction.response.send_modal(modal)
 
     view = EierView()
+    await ctx.respond("Created", ephemeral=True)
     # "How many eggs did you find?"
     await ctx.send("Wie viele **Eier** hast du gefunden?", view=view)
 
+
 # Get a winner
-@discord.commands.permissions.has_role(admin, guild_id=guild, description="Beende die Suche, ermittle einen random Gewinner.")
-@bot.slash_command(name="eiergefunden", guild_ids=[guild])
+@bot.slash_command(name="eiergefunden", guild_ids=[guild], description="Beende die Suche, ermittle einen random Gewinner.")
+@discord.commands.permissions.has_role(admin, guild_id=guild)
 async def eiersuche(ctx):
     # load local JSON database :: all participants
     with open("guesses.json", 'r') as f:
@@ -105,17 +115,19 @@ async def eiersuche(ctx):
     # while loop to go through json
     while(True):
         try:
-            if(data["participant"+str(i)]["guess"] == n):
+            if(data["participant"+str(i)]["guess"] == eggs):
                 l.append(data["participant"+str(i)]["id"])
             i = i+1
         # exception -> end of json
-        except:
+        except(KeyError):
             # get winner
-            winner = random.randint(0, len(l)-1)
-            winningmember = ctx.guild.get_member(l[winner])
+            winner = random.randint(1, len(l))
+            print(l[winner-1])
 
-            await ctx.respond("Gewinenr gefunden", ephemeral=True)
-            await ctx.channel.send(f"Gewonnen hat {winningmember.mention}")
+            await ctx.respond("Ended", ephemeral=True)
+            # The winner is
+            await ctx.channel.send(f"Gewonnen hat <@{l[winner-1]}>")
+            return
 
 
 # Load token from TOKEN.py in folder SECRET/
