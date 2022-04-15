@@ -5,6 +5,7 @@ import json
 import random
 from discord.ext import commands
 from discord.ui import InputText, Modal
+from discord.commands import Option
 from SECRET import TOKEN
 from CONFIG import SERVER, EGGS
 
@@ -100,10 +101,13 @@ async def eiersuche(ctx):
     await ctx.send("Wie viele **Eier** hast du gefunden?", view=view)
 
 
-# Get a winner
+# Get winners
 @bot.slash_command(name="eiergefunden", guild_ids=[guild], description="Beende die Suche, ermittle einen random Gewinner.")
 @discord.commands.permissions.has_role(admin, guild_id=guild)
-async def eiersuche(ctx):
+async def eiergefunden(
+    ctx,
+    gewinneranzahl: Option(int, "Anzahl Gewinner", min_value=1)
+    ):
     # load local JSON database :: all participants
     with open("guesses.json", 'r') as f:
         data = json.load(f)
@@ -120,21 +124,21 @@ async def eiersuche(ctx):
             i = i+1
         # exception -> end of json
         except(KeyError):
-            # get winner
-            if(len(l)==0):
-                await ctx.respond("Ended", ephemeral=True)
-                # no one got right number -> no winner
-                await ctx.channel.send("Kein Gewinner, niemand hat die richtige Anzahl erkannt.")
+            # Check if selected number of winners is valid
+            if gewinneranzahl > len(l):
+                # Number for count of winners is higher than number of participants
+                await ctx.respond("Es gibt weniger Teilnehmer als ausgewählte Gewinner. Probiere es erneut.", ephemeral=True)
                 return
-            elif(len(l)==1):
-                winner = 1
-            else:
-                winner = random.randint(1, len(l))
-            # print(l[winner-1])
 
             await ctx.respond("Ended", ephemeral=True)
-            # The winner is
-            await ctx.channel.send(f"Gewonnen hat <@{l[winner-1]}>")
+
+            #get winners
+
+            for _ in range(0, gewinneranzahl):
+                winner = random.randint(1, len(l))
+
+                # The winner is
+                await ctx.channel.send(f"Gewonnen hat <@{l[winner-1]}>")
             return
 
 
