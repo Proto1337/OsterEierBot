@@ -121,8 +121,16 @@ async def eiersuche(ctx):
         # exception -> end of json
         except(KeyError):
             # get winner
-            winner = random.randint(1, len(l))
-            print(l[winner-1])
+            if(len(l)==0):
+                await ctx.respond("Ended", ephemeral=True)
+                # no one got right number -> no winner
+                await ctx.channel.send("Kein Gewinner, niemand hat die richtige Anzahl erkannt.")
+                return
+            elif(len(l)==1):
+                winner = 1
+            else:
+                winner = random.randint(1, len(l))
+            # print(l[winner-1])
 
             await ctx.respond("Ended", ephemeral=True)
             # The winner is
@@ -131,4 +139,5 @@ async def eiersuche(ctx):
 
 
 # Load token from TOKEN.py in folder SECRET/
+#asyncio.run(bot.login(TOKEN.TOKEN))
 bot.run(TOKEN.TOKEN)
