@@ -37,8 +37,8 @@ async def on_ready():
 class EierSuche(Modal):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
-        # "How many eggs did you find?"
-        self.add_item(InputText(label="Wie viele Eier hast du gefunden?", placeholder="Ganze Zahl. Nur eine Teilnahme möglich!", min_length=1, max_length=2))
+        # "How many eggs did you find?" PLACEHOLDER: Only one try!
+        self.add_item(InputText(label="Wie viele Eier hast du gefunden?", placeholder="Ganze Zahl. Nur ein Versuch möglich!", min_length=1, max_length=2))
 
     async def callback(self, interaction: discord.Interaction):
         # Check if Input is an Integer, end task if not
