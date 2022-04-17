@@ -143,5 +143,5 @@ async def eiergefunden(
 
 
 # Load token from TOKEN.py in folder SECRET/
-#asyncio.run(bot.login(TOKEN.TOKEN))
+#asyncio.run(bot.start(TOKEN.TOKEN))
 bot.run(TOKEN.TOKEN)
